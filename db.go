@@ -65,20 +65,20 @@ func OpenDbForReadOnly(opts *Options, name string, errorIfLogFileExist bool) (*D
 func OpenDbColumnFamilies(
 	opts *Options,
 	name string,
-	cfNames []string,
-	cfOpts []*Options,
+	cfDescriptors []*ColumnFamilyDescriptor,
 ) (*DB, []*ColumnFamilyHandle, error) {
-	numColumnFamilies := len(cfNames)
-	if numColumnFamilies != len(cfOpts) {
-		return nil, nil, errors.New("must provide the same number of column family names and options")
+	numColumnFamilies := len(cfDescriptors)
+	if numColumnFamilies == 0 {
+		return nil, nil, errors.New("must provide the column family names and options")
 	}
 
-	cName := C.CString(name)
-	defer C.free(unsafe.Pointer(cName))
-
-	cNames := make([]*C.char, numColumnFamilies)
-	for i, s := range cfNames {
-		cNames[i] = C.CString(s)
+	var (
+		cNames = make([]*C.char, numColumnFamilies)
+		cOpts  = make([]*C.rocksdb_options_t, numColumnFamilies)
+	)
+	for i, s := range cfDescriptors {
+		cNames[i] = C.CString(s.Name)
+		cOpts[i] = s.Options.c
 	}
 	defer func() {
 		for _, s := range cNames {
@@ -86,14 +86,13 @@ func OpenDbColumnFamilies(
 		}
 	}()
 
-	cOpts := make([]*C.rocksdb_options_t, numColumnFamilies)
-	for i, o := range cfOpts {
-		cOpts[i] = o.c
-	}
+	var (
+		cErr     *C.char
+		cName    = C.CString(name)
+		cHandles = make([]*C.rocksdb_column_family_handle_t, numColumnFamilies)
+	)
+	defer C.free(unsafe.Pointer(cName))
 
-	cHandles := make([]*C.rocksdb_column_family_handle_t, numColumnFamilies)
-
-	var cErr *C.char
 	db := C.rocksdb_open_column_families(
 		opts.c,
 		cName,
@@ -125,21 +124,21 @@ func OpenDbColumnFamilies(
 func OpenDbForReadOnlyColumnFamilies(
 	opts *Options,
 	name string,
-	cfNames []string,
-	cfOpts []*Options,
+	cfDescriptors []*ColumnFamilyDescriptor,
 	errorIfLogFileExist bool,
 ) (*DB, []*ColumnFamilyHandle, error) {
-	numColumnFamilies := len(cfNames)
-	if numColumnFamilies != len(cfOpts) {
-		return nil, nil, errors.New("must provide the same number of column family names and options")
+	numColumnFamilies := len(cfDescriptors)
+	if numColumnFamilies == 0 {
+		return nil, nil, errors.New("must provide the column family names and options")
 	}
 
-	cName := C.CString(name)
-	defer C.free(unsafe.Pointer(cName))
-
-	cNames := make([]*C.char, numColumnFamilies)
-	for i, s := range cfNames {
-		cNames[i] = C.CString(s)
+	var (
+		cNames = make([]*C.char, numColumnFamilies)
+		cOpts  = make([]*C.rocksdb_options_t, numColumnFamilies)
+	)
+	for i, s := range cfDescriptors {
+		cNames[i] = C.CString(s.Name)
+		cOpts[i] = s.Options.c
 	}
 	defer func() {
 		for _, s := range cNames {
@@ -147,14 +146,13 @@ func OpenDbForReadOnlyColumnFamilies(
 		}
 	}()
 
-	cOpts := make([]*C.rocksdb_options_t, numColumnFamilies)
-	for i, o := range cfOpts {
-		cOpts[i] = o.c
-	}
+	var (
+		cErr     *C.char
+		cName    = C.CString(name)
+		cHandles = make([]*C.rocksdb_column_family_handle_t, numColumnFamilies)
+	)
+	defer C.free(unsafe.Pointer(cName))
 
-	cHandles := make([]*C.rocksdb_column_family_handle_t, numColumnFamilies)
-
-	var cErr *C.char
 	db := C.rocksdb_open_for_read_only_column_families(
 		opts.c,
 		cName,

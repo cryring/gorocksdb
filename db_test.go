@@ -50,14 +50,14 @@ func TestDBCRUD(t *testing.T) {
 
 func TestDBCRUDDBPaths(t *testing.T) {
 	names := make([]string, 4)
-	target_sizes := make([]uint64, len(names))
+	targetSizes := make([]uint64, len(names))
 
 	for i := range names {
 		names[i] = "TestDBGet_" + strconv.FormatInt(int64(i), 10)
-		target_sizes[i] = uint64(1024 * 1024 * (i + 1))
+		targetSizes[i] = uint64(1024 * 1024 * (i + 1))
 	}
 
-	db := newTestDBPathNames(t, "TestDBGet", names, target_sizes, nil)
+	db := newTestDBPathNames(t, "TestDBGet", names, targetSizes, nil)
 	defer db.Close()
 
 	var (
@@ -109,8 +109,8 @@ func newTestDB(t *testing.T, name string, applyOpts func(opts *Options)) *DB {
 	return db
 }
 
-func newTestDBPathNames(t *testing.T, name string, names []string, target_sizes []uint64, applyOpts func(opts *Options)) *DB {
-	ensure.DeepEqual(t, len(target_sizes), len(names))
+func newTestDBPathNames(t *testing.T, name string, names []string, targetSizes []uint64, applyOpts func(opts *Options)) *DB {
+	ensure.DeepEqual(t, len(targetSizes), len(names))
 	ensure.NotDeepEqual(t, len(names), 0)
 
 	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
@@ -123,7 +123,7 @@ func newTestDBPathNames(t *testing.T, name string, names []string, target_sizes 
 		paths[i] = dir
 	}
 
-	dbpaths := NewDBPathsFromData(paths, target_sizes)
+	dbpaths := NewDBPathsFromData(paths, targetSizes)
 	defer DestroyDBPaths(dbpaths)
 
 	opts := NewDefaultOptions()

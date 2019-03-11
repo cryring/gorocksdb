@@ -8,13 +8,14 @@ import "C"
 type IndexType uint
 
 const (
-	// A space efficient index block that is optimized for
+	// KBinarySearchIndexType is a space efficient index block that is optimized for
 	// binary-search-based index.
 	KBinarySearchIndexType = 0
-	// The hash index, if enabled, will do the hash lookup when
+	// KHashSearchIndexType is the hash index, if enabled, will do the hash lookup when
 	// `Options.prefix_extractor` is provided.
 	KHashSearchIndexType = 1
-	// A two-level index implementation. Both levels are binary search indexes.
+	// KTwoLevelIndexSearchIndexType is a two-level index implementation.
+	// Both levels are binary search indexes.
 	KTwoLevelIndexSearchIndexType = 2
 )
 

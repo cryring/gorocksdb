@@ -11,8 +11,10 @@ type Slice struct {
 	freed bool
 }
 
+// Slices resprevents a array of Slick
 type Slices []*Slice
 
+// Destroy free the slices data
 func (slices Slices) Destroy() {
 	for _, s := range slices {
 		s.Free()

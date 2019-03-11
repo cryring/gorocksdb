@@ -7,12 +7,18 @@ import "unsafe"
 
 // ColumnFamilyHandle represents a handle to a ColumnFamily.
 type ColumnFamilyHandle struct {
-	c *C.rocksdb_column_family_handle_t
+	c    *C.rocksdb_column_family_handle_t
+	name string
 }
 
 // NewNativeColumnFamilyHandle creates a ColumnFamilyHandle object.
 func NewNativeColumnFamilyHandle(c *C.rocksdb_column_family_handle_t) *ColumnFamilyHandle {
-	return &ColumnFamilyHandle{c}
+	return &ColumnFamilyHandle{c: c}
+}
+
+// Name returns the name of column family.
+func (h *ColumnFamilyHandle) Name() string {
+	return h.name
 }
 
 // UnsafeGetCFHandler returns the underlying c column family handle.
@@ -25,6 +31,7 @@ func (h *ColumnFamilyHandle) Destroy() {
 	C.rocksdb_column_family_handle_destroy(h.c)
 }
 
+// ColumnFamilyHandles represents the array of column families.
 type ColumnFamilyHandles []*ColumnFamilyHandle
 
 func (cfs ColumnFamilyHandles) toCSlice() columnFamilySlice {
@@ -33,4 +40,10 @@ func (cfs ColumnFamilyHandles) toCSlice() columnFamilySlice {
 		cCFs[i] = cf.c
 	}
 	return cCFs
+}
+
+// ColumnFamilyDescriptor represents the descriptor of a column family.
+type ColumnFamilyDescriptor struct {
+	Name    string
+	Options *Options
 }

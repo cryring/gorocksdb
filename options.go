@@ -248,8 +248,8 @@ func (opts *Options) SetInfoLogLevel(value InfoLogLevel) {
 // `total_threads` is used. Good value for `total_threads` is the number of
 // cores. You almost definitely want to call this function if your system is
 // bottlenecked by RocksDB.
-func (opts *Options) IncreaseParallelism(total_threads int) {
-	C.rocksdb_options_increase_parallelism(opts.c, C.int(total_threads))
+func (opts *Options) IncreaseParallelism(totalThreads int) {
+	C.rocksdb_options_increase_parallelism(opts.c, C.int(totalThreads))
 }
 
 // OptimizeForPointLookup optimize the DB for point lookups.
@@ -259,12 +259,12 @@ func (opts *Options) IncreaseParallelism(total_threads int) {
 //
 // If you use this with rocksdb >= 5.0.2, you must call `SetAllowConcurrentMemtableWrites(false)`
 // to avoid an assertion error immediately on opening the db.
-func (opts *Options) OptimizeForPointLookup(block_cache_size_mb uint64) {
-	C.rocksdb_options_optimize_for_point_lookup(opts.c, C.uint64_t(block_cache_size_mb))
+func (opts *Options) OptimizeForPointLookup(blockCacheSizeMb uint64) {
+	C.rocksdb_options_optimize_for_point_lookup(opts.c, C.uint64_t(blockCacheSizeMb))
 }
 
-// Set whether to allow concurrent memtable writes. Conccurent writes are
-// not supported by all memtable factories (currently only SkipList memtables).
+// SetAllowConcurrentMemtableWrites is used to set whether to allow concurrent memtable writes.
+// Conccurent writes are not supported by all memtable factories (currently only SkipList memtables).
 // As of rocksdb 5.0.2 you must call `SetAllowConcurrentMemtableWrites(false)`
 // if you use `OptimizeForPointLookup`.
 func (opts *Options) SetAllowConcurrentMemtableWrites(allow bool) {
@@ -287,14 +287,14 @@ func (opts *Options) SetAllowConcurrentMemtableWrites(allow bool) {
 // biggest performance gains.
 // Note: we might use more memory than memtable_memory_budget during high
 // write rate period
-func (opts *Options) OptimizeLevelStyleCompaction(memtable_memory_budget uint64) {
-	C.rocksdb_options_optimize_level_style_compaction(opts.c, C.uint64_t(memtable_memory_budget))
+func (opts *Options) OptimizeLevelStyleCompaction(memtableMemoryBudget uint64) {
+	C.rocksdb_options_optimize_level_style_compaction(opts.c, C.uint64_t(memtableMemoryBudget))
 }
 
 // OptimizeUniversalStyleCompaction optimize the DB for universal compaction.
 // See note on OptimizeLevelStyleCompaction.
-func (opts *Options) OptimizeUniversalStyleCompaction(memtable_memory_budget uint64) {
-	C.rocksdb_options_optimize_universal_style_compaction(opts.c, C.uint64_t(memtable_memory_budget))
+func (opts *Options) OptimizeUniversalStyleCompaction(memtableMemoryBudget uint64) {
+	C.rocksdb_options_optimize_universal_style_compaction(opts.c, C.uint64_t(memtableMemoryBudget))
 }
 
 // SetWriteBufferSize sets the amount of data to build up in memory
@@ -504,7 +504,7 @@ func (opts *Options) SetMaxBytesForLevelMultiplier(value float64) {
 	C.rocksdb_options_set_max_bytes_for_level_multiplier(opts.c, C.double(value))
 }
 
-// SetLevelCompactiondynamiclevelbytes specifies whether to pick
+// SetLevelCompactionDynamicLevelBytes specifies whether to pick
 // target size of each level dynamically.
 //
 // We will pick a base level b >= 1. L0 will be directly merged into level b,

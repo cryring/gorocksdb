@@ -11,11 +11,23 @@ func TestColumnFamilyOpen(t *testing.T) {
 	dir, err := ioutil.TempDir("", "gorocksdb-TestColumnFamilyOpen")
 	ensure.Nil(t, err)
 
-	givenNames := []string{"default", "guide"}
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
-	db, cfh, err := OpenDbColumnFamilies(opts, dir, givenNames, []*Options{opts, opts})
+
+	givenNames := []string{"default", "guide"}
+	cfDescriptors := []*ColumnFamilyDescriptor{
+		&ColumnFamilyDescriptor{
+			Name:    givenNames[0],
+			Options: opts,
+		},
+		&ColumnFamilyDescriptor{
+			Name:    givenNames[1],
+			Options: opts,
+		},
+	}
+
+	db, cfh, err := OpenDbColumnFamilies(opts, dir, cfDescriptors)
 	ensure.Nil(t, err)
 	defer db.Close()
 	ensure.DeepEqual(t, len(cfh), 2)
@@ -60,7 +72,19 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
-	db, cfh, err := OpenDbColumnFamilies(opts, dir, givenNames, []*Options{opts, opts})
+
+	cfDescriptors := []*ColumnFamilyDescriptor{
+		&ColumnFamilyDescriptor{
+			Name:    givenNames[0],
+			Options: opts,
+		},
+		&ColumnFamilyDescriptor{
+			Name:    givenNames[1],
+			Options: opts,
+		},
+	}
+
+	db, cfh, err := OpenDbColumnFamilies(opts, dir, cfDescriptors)
 	ensure.Nil(t, err)
 	defer db.Close()
 	ensure.DeepEqual(t, len(cfh), 2)
@@ -111,7 +135,19 @@ func TestColumnFamilyPutGetDelete(t *testing.T) {
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
-	db, cfh, err := OpenDbColumnFamilies(opts, dir, givenNames, []*Options{opts, opts})
+
+	cfDescriptors := []*ColumnFamilyDescriptor{
+		&ColumnFamilyDescriptor{
+			Name:    givenNames[0],
+			Options: opts,
+		},
+		&ColumnFamilyDescriptor{
+			Name:    givenNames[1],
+			Options: opts,
+		},
+	}
+
+	db, cfh, err := OpenDbColumnFamilies(opts, dir, cfDescriptors)
 	ensure.Nil(t, err)
 	defer db.Close()
 	ensure.DeepEqual(t, len(cfh), 2)
@@ -161,7 +197,19 @@ func newTestDBCF(t *testing.T, name string) (db *DB, cfh []*ColumnFamilyHandle, 
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
-	db, cfh, err = OpenDbColumnFamilies(opts, dir, givenNames, []*Options{opts, opts})
+
+	cfDescriptors := []*ColumnFamilyDescriptor{
+		&ColumnFamilyDescriptor{
+			Name:    givenNames[0],
+			Options: opts,
+		},
+		&ColumnFamilyDescriptor{
+			Name:    givenNames[1],
+			Options: opts,
+		},
+	}
+
+	db, cfh, err = OpenDbColumnFamilies(opts, dir, cfDescriptors)
 	ensure.Nil(t, err)
 	cleanup = func() {
 		for _, cf := range cfh {
