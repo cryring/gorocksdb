@@ -387,6 +387,13 @@ func (db *DB) PutCF(opts *WriteOptions, cf *ColumnFamilyHandle, key, value []byt
 	return nil
 }
 
+// DeleteRange removes the database entries in the range ["begin_key", "end_key").
+func (db *DB) DeleteRange(opts *WriteOptions, begin, end []byte) error {
+	batch := NewWriteBatch()
+	batch.DeleteRange(begin, end)
+	return db.Write(opts, batch)
+}
+
 // Delete removes the data associated with the key from the database.
 func (db *DB) Delete(opts *WriteOptions, key []byte) error {
 	var (
