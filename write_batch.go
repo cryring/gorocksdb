@@ -68,6 +68,15 @@ func (wb *WriteBatch) DeleteCF(cf *ColumnFamilyHandle, key []byte) {
 	C.rocksdb_writebatch_delete_cf(wb.c, cf.c, cKey, C.size_t(len(key)))
 }
 
+// DeleteRangeCF queues a deletion range of the data at key in a column family.
+func (wb *WriteBatch) DeleteRangeCF(cf *ColumnFamilyHandle, begin, end []byte) {
+	var (
+		cBegin = byteToChar(begin)
+		cEnd   = byteToChar(end)
+	)
+	C.rocksdb_writebatch_delete_range_cf(wb.c, cf.c, cBegin, C.size_t(len(begin)), cEnd, C.size_t(len(end)))
+}
+
 // Data returns the serialized version of this batch.
 func (wb *WriteBatch) Data() []byte {
 	var cSize C.size_t
