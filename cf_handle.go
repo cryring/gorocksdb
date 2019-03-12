@@ -7,12 +7,18 @@ import "unsafe"
 
 // ColumnFamilyHandle represents a handle to a ColumnFamily.
 type ColumnFamilyHandle struct {
-	c *C.rocksdb_column_family_handle_t
+	c    *C.rocksdb_column_family_handle_t
+	name string
 }
 
 // NewNativeColumnFamilyHandle creates a ColumnFamilyHandle object.
-func NewNativeColumnFamilyHandle(c *C.rocksdb_column_family_handle_t) *ColumnFamilyHandle {
-	return &ColumnFamilyHandle{c: c}
+func NewNativeColumnFamilyHandle(c *C.rocksdb_column_family_handle_t, name string) *ColumnFamilyHandle {
+	return &ColumnFamilyHandle{c: c, name: name}
+}
+
+// Name returns the name of column family.
+func (h *ColumnFamilyHandle) Name() string {
+	return h.name
 }
 
 // UnsafeGetCFHandler returns the underlying c column family handle.

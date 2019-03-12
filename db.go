@@ -109,7 +109,7 @@ func OpenDbColumnFamilies(
 
 	cfHandles := make([]*ColumnFamilyHandle, numColumnFamilies)
 	for i, c := range cHandles {
-		cfHandles[i] = NewNativeColumnFamilyHandle(c)
+		cfHandles[i] = NewNativeColumnFamilyHandle(c, cfDescriptors[i].Name)
 	}
 
 	return &DB{
@@ -170,7 +170,7 @@ func OpenDbForReadOnlyColumnFamilies(
 
 	cfHandles := make([]*ColumnFamilyHandle, numColumnFamilies)
 	for i, c := range cHandles {
-		cfHandles[i] = NewNativeColumnFamilyHandle(c)
+		cfHandles[i] = NewNativeColumnFamilyHandle(c, cfDescriptors[i].Name)
 	}
 
 	return &DB{
@@ -525,7 +525,7 @@ func (db *DB) CreateColumnFamily(opts *Options, name string) (*ColumnFamilyHandl
 		defer C.free(unsafe.Pointer(cErr))
 		return nil, errors.New(C.GoString(cErr))
 	}
-	return NewNativeColumnFamilyHandle(cHandle), nil
+	return NewNativeColumnFamilyHandle(cHandle, name), nil
 }
 
 // DropColumnFamily drops a column family.

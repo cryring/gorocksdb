@@ -30,7 +30,45 @@ func TestColumnFamilyOpen(t *testing.T) {
 	db, cfh, err := OpenDbColumnFamilies(opts, dir, cfDescriptors)
 	ensure.Nil(t, err)
 	defer db.Close()
+	ensure.DeepEqual(t, cfDescriptors[0].Name, cfh[0].Name())
+	ensure.DeepEqual(t, cfDescriptors[1].Name, cfh[1].Name())
 	ensure.DeepEqual(t, len(cfh), 2)
+	cfh[0].Destroy()
+	cfh[1].Destroy()
+
+	actualNames, err := ListColumnFamilies(opts, dir)
+	ensure.Nil(t, err)
+	ensure.SameElements(t, actualNames, givenNames)
+}
+
+func TestColumnFamilyOpenOrder(t *testing.T) {
+	dir, err := ioutil.TempDir("", "gorocksdb-TestColumnFamilyOpenOrder")
+	ensure.Nil(t, err)
+
+	opts := NewDefaultOptions()
+	opts.SetCreateIfMissingColumnFamilies(true)
+	opts.SetCreateIfMissing(true)
+
+	givenNames := []string{
+		"1", "default", "guide", "333", "aaa", "bbbb",
+		"zzz", "77", "test_cf", "nnn", "order",
+	}
+	cfDescriptors := make([]*ColumnFamilyDescriptor, len(givenNames))
+	for i := 0; i < len(cfDescriptors); i++ {
+		cfDescriptors[i] = &ColumnFamilyDescriptor{
+			Name:    givenNames[i],
+			Options: opts,
+		}
+	}
+
+	db, cfh, err := OpenDbColumnFamilies(opts, dir, cfDescriptors)
+	ensure.Nil(t, err)
+	defer db.Close()
+	ensure.DeepEqual(t, len(cfh), len(givenNames))
+	for i := 0; i < len(givenNames); i++ {
+		ensure.DeepEqual(t, cfDescriptors[i].Name, cfh[i].Name())
+	}
+
 	cfh[0].Destroy()
 	cfh[1].Destroy()
 
@@ -87,6 +125,8 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 	db, cfh, err := OpenDbColumnFamilies(opts, dir, cfDescriptors)
 	ensure.Nil(t, err)
 	defer db.Close()
+	ensure.DeepEqual(t, cfDescriptors[0].Name, cfh[0].Name())
+	ensure.DeepEqual(t, cfDescriptors[1].Name, cfh[1].Name())
 	ensure.DeepEqual(t, len(cfh), 2)
 	defer cfh[0].Destroy()
 	defer cfh[1].Destroy()
@@ -150,6 +190,8 @@ func TestColumnFamilyPutGetDelete(t *testing.T) {
 	db, cfh, err := OpenDbColumnFamilies(opts, dir, cfDescriptors)
 	ensure.Nil(t, err)
 	defer db.Close()
+	ensure.DeepEqual(t, cfDescriptors[0].Name, cfh[0].Name())
+	ensure.DeepEqual(t, cfDescriptors[1].Name, cfh[1].Name())
 	ensure.DeepEqual(t, len(cfh), 2)
 	defer cfh[0].Destroy()
 	defer cfh[1].Destroy()
@@ -211,6 +253,8 @@ func newTestDBCF(t *testing.T, name string) (db *DB, cfh []*ColumnFamilyHandle, 
 
 	db, cfh, err = OpenDbColumnFamilies(opts, dir, cfDescriptors)
 	ensure.Nil(t, err)
+	ensure.DeepEqual(t, cfDescriptors[0].Name, cfh[0].Name())
+	ensure.DeepEqual(t, cfDescriptors[1].Name, cfh[1].Name())
 	cleanup = func() {
 		for _, cf := range cfh {
 			cf.Destroy()
