@@ -39,6 +39,22 @@ func TestWriteBatch(t *testing.T) {
 	defer v2.Free()
 	ensure.Nil(t, err)
 	ensure.True(t, v2.Data() == nil)
+
+	vKeys := [][]byte{
+		givenKey1,
+		givenKey2,
+	}
+	vValues := [][]byte{
+		givenVal1,
+	}
+	wb.PutV(vKeys, vValues)
+	ensure.Nil(t, db.Write(wo, wb))
+
+	v3, err := db.Get(ro, []byte("key1key2"))
+	defer v3.Free()
+
+	ensure.Nil(t, err)
+	ensure.DeepEqual(t, v3.Data(), givenVal1)
 }
 
 func TestWriteBatchIterator(t *testing.T) {
