@@ -98,6 +98,23 @@ func (opts *ReadOptions) SetIterateUpperBound(key []byte) {
 	C.rocksdb_readoptions_set_iterate_upper_bound(opts.c, cKey, cKeyLen)
 }
 
+// SetIterateLowerBound specifies `iterate_lower_bound`, which defines
+// the smallest key at which the backward iterator can return an entry.
+// Once the bound is passed, Valid() will be
+// false. `iterate_lower_bound` is inclusive ie the bound value is a valid
+// entry.
+//
+// If prefix_extractor is not null, the Seek target and `iterate_lower_bound`
+// need to have the same prefix. This is because ordering is not guaranteed
+// outside of prefix domain.
+//
+// Default: nullptr
+func (opts *ReadOptions) SetIterateLowerBound(key []byte) {
+	cKey := byteToChar(key)
+	cKeyLen := C.size_t(len(key))
+	C.rocksdb_readoptions_set_iterate_lower_bound(opts.c, cKey, cKeyLen)
+}
+
 // SetPinData specifies the value of "pin_data". If true, it keeps the blocks
 // loaded by the iterator pinned in memory as long as the iterator is not deleted,
 // If used when reading from tables created with
@@ -109,6 +126,17 @@ func (opts *ReadOptions) SetPinData(value bool) {
 	C.rocksdb_readoptions_set_pin_data(opts.c, boolToChar(value))
 }
 
+// SetTotalOrderSeek ...
+// Enable a total order seek regardless of index format (e.g. hash index)
+// used in the table. Some table format (e.g. plain table) may not support
+// this option.
+// If true when calling Get(), we also skip prefix bloom when reading from
+// block based table. It provides a way to read existing data after
+// changing implementation of prefix extractor.
+func (opts *ReadOptions) SetTotalOrderSeek(value bool) {
+	C.rocksdb_readoptions_set_total_order_seek(opts.c, boolToChar(value))
+}
+
 // SetReadaheadSize specifies the value of "readahead_size".
 // If non-zero, NewIterator will create a new table reader which
 // performs reads of the given size. Using a large size (> 2MB) can
@@ -116,6 +144,44 @@ func (opts *ReadOptions) SetPinData(value bool) {
 // Default: 0
 func (opts *ReadOptions) SetReadaheadSize(value uint64) {
 	C.rocksdb_readoptions_set_readahead_size(opts.c, C.size_t(value))
+}
+
+// SetPrefixSameAsStart ...
+// Enforce that the iterator only iterates over the same prefix as the seek.
+// This option is effective only for prefix seeks, i.e. prefix_extractor is
+// non-null for the column family and total_order_seek is false.  Unlike
+// iterate_upper_bound, prefix_same_as_start only works within a prefix
+// but in both directions.
+// Default: false
+func (opts *ReadOptions) SetPrefixSameAsStart(value bool) {
+	C.rocksdb_readoptions_set_prefix_same_as_start(opts.c, boolToChar(value))
+}
+
+// SetBackgroundPurgeOnIteratorCleanup ...
+// If true, when PurgeObsoleteFile is called in CleanupIteratorState, we
+// schedule a background job in the flush job queue and delete obsolete files
+// in background.
+// Default: false
+func (opts *ReadOptions) SetBackgroundPurgeOnIteratorCleanup(value bool) {
+	C.rocksdb_readoptions_set_background_purge_on_iterator_cleanup(opts.c, boolToChar(value))
+}
+
+// SetIgnoreRangeDeletions ...
+// If true, keys deleted using the DeleteRange() API will be visible to
+// readers until they are naturally deleted during compaction. This improves
+// read performance in DBs with many range deletions.
+// Default: false
+func (opts *ReadOptions) SetIgnoreRangeDeletions(value bool) {
+	C.rocksdb_readoptions_set_ignore_range_deletions(opts.c, boolToChar(value))
+}
+
+// SetMaxSkippableInternalKeys ...
+// A threshold for the number of keys that can be skipped before failing an
+// iterator seek as incomplete. The default value of 0 should be used to
+// never fail a request as incomplete, even on skipping too many keys.
+// Default: 0
+func (opts *ReadOptions) SetMaxSkippableInternalKeys(value uint64) {
+	C.rocksdb_readoptions_set_max_skippable_internal_keys(opts.c, C.uint64_t(value))
 }
 
 // Destroy deallocates the ReadOptions object.
