@@ -89,6 +89,23 @@ func (db *TransactionDB) Get(opts *ReadOptions, key []byte) (*Slice, error) {
 	return NewSlice(cValue, cValLen), nil
 }
 
+// GetCF returns the data associated with the key from the database.
+func (db *TransactionDB) GetCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (*Slice, error) {
+	var (
+		cErr    *C.char
+		cValLen C.size_t
+		cKey    = byteToChar(key)
+	)
+	cValue := C.rocksdb_transactiondb_get_cf(
+		db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cValLen, &cErr,
+	)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return nil, errors.New(C.GoString(cErr))
+	}
+	return NewSlice(cValue, cValLen), nil
+}
+
 // Put writes data associated with a key to the database.
 func (db *TransactionDB) Put(opts *WriteOptions, key, value []byte) error {
 	var (
@@ -106,6 +123,23 @@ func (db *TransactionDB) Put(opts *WriteOptions, key, value []byte) error {
 	return nil
 }
 
+// PutCF writes data associated with a key to the database.
+func (db *TransactionDB) PutCF(opts *WriteOptions, cf *ColumnFamilyHandle, key, value []byte) error {
+	var (
+		cErr   *C.char
+		cKey   = byteToChar(key)
+		cValue = byteToChar(value)
+	)
+	C.rocksdb_transactiondb_put_cf(
+		db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr,
+	)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
+
 // Delete removes the data associated with the key from the database.
 func (db *TransactionDB) Delete(opts *WriteOptions, key []byte) error {
 	var (
@@ -113,6 +147,38 @@ func (db *TransactionDB) Delete(opts *WriteOptions, key []byte) error {
 		cKey = byteToChar(key)
 	)
 	C.rocksdb_transactiondb_delete(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
+
+// DeleteCF removes the data associated with the key from the database.
+func (db *TransactionDB) DeleteCF(opts *WriteOptions, cf *ColumnFamilyHandle, key []byte) error {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+	C.rocksdb_transactiondb_delete_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
+
+// Merge the database entry for "key" with "value".  Returns OK on success,
+// and a non-OK status on error. The semantics of this operation is
+// determined by the user provided merge_operator when opening DB.
+// Note: consider setting options.sync = true.
+func (db *TransactionDB) Merge(opts *WriteOptions, key, value []byte) error {
+	var (
+		cErr   *C.char
+		cKey   = byteToChar(key)
+		cValue = byteToChar(value)
+	)
+	C.rocksdb_transactiondb_merge(db.c, opts.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
 	if cErr != nil {
 		defer C.free(unsafe.Pointer(cErr))
 		return errors.New(C.GoString(cErr))

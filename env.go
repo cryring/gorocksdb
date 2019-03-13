@@ -33,6 +33,11 @@ func (env *Env) SetHighPriorityBackgroundThreads(n int) {
 	C.rocksdb_env_set_high_priority_background_threads(env.c, C.int(n))
 }
 
+// SetJoinAllThreads wait for all threads started by StartThread to terminate.
+func (env *Env) SetJoinAllThreads() {
+	C.rocksdb_env_join_all_threads(env.c)
+}
+
 // Destroy deallocates the Env object.
 func (env *Env) Destroy() {
 	C.rocksdb_env_destroy(env.c)

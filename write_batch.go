@@ -6,6 +6,7 @@ import "C"
 import (
 	"errors"
 	"io"
+	"unsafe"
 )
 
 // WriteBatch is a batching of Puts, Merges and Deletes.
@@ -184,6 +185,27 @@ func (wb *WriteBatch) Data() []byte {
 	var cSize C.size_t
 	cValue := C.rocksdb_writebatch_data(wb.c, &cSize)
 	return charToByte(cValue, cSize)
+}
+
+// SetSavePoint records the state of the batch for future calls to RollbackToSavePoint().
+// May be called multiple times to set multiple save points.
+func (wb *WriteBatch) SetSavePoint() {
+	C.rocksdb_writebatch_set_save_point(wb.c)
+}
+
+// RollBackToSavePoint remove all entries in this batch (Put, Merge, Delete, PutLogData) since the
+// most recent call to SetSavePoint() and removes the most recent save point.
+// If there is no previous call to SetSavePoint(), Status::NotFound()
+// will be returned.
+// Otherwise returns Status::OK().
+func (wb *WriteBatch) RollBackToSavePoint() error {
+	var cErr *C.char
+	C.rocksdb_writebatch_rollback_to_save_point(wb.c, &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
 }
 
 // Count returns the number of updates in the batch.
@@ -493,6 +515,27 @@ func (wb *WriteBatchWithIndex) Data() []byte {
 	var cSize C.size_t
 	cValue := C.rocksdb_writebatch_wi_data(wb.c, &cSize)
 	return charToByte(cValue, cSize)
+}
+
+// SetSavePoint records the state of the batch for future calls to RollbackToSavePoint().
+// May be called multiple times to set multiple save points.
+func (wb *WriteBatchWithIndex) SetSavePoint() {
+	C.rocksdb_writebatch_wi_set_save_point(wb.c)
+}
+
+// RollBackToSavePoint remove all entries in this batch (Put, Merge, Delete, PutLogData) since the
+// most recent call to SetSavePoint() and removes the most recent save point.
+// If there is no previous call to SetSavePoint(), Status::NotFound()
+// will be returned.
+// Otherwise returns Status::OK().
+func (wb *WriteBatchWithIndex) RollBackToSavePoint() error {
+	var cErr *C.char
+	C.rocksdb_writebatch_wi_rollback_to_save_point(wb.c, &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
 }
 
 // Count returns the number of updates in the batch.

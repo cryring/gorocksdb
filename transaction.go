@@ -21,9 +21,7 @@ func NewNativeTransaction(c *C.rocksdb_transaction_t) *Transaction {
 
 // Commit commits the transaction to the database.
 func (transaction *Transaction) Commit() error {
-	var (
-		cErr *C.char
-	)
+	var cErr *C.char
 	C.rocksdb_transaction_commit(transaction.c, &cErr)
 	if cErr != nil {
 		defer C.free(unsafe.Pointer(cErr))
@@ -34,11 +32,31 @@ func (transaction *Transaction) Commit() error {
 
 // Rollback performs a rollback on the transaction.
 func (transaction *Transaction) Rollback() error {
-	var (
-		cErr *C.char
-	)
+	var cErr *C.char
 	C.rocksdb_transaction_rollback(transaction.c, &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
 
+// SetSavePoint ...
+// Records the state of the transaction for future calls to
+// RollbackToSavePoint().  May be called multiple times to set multiple save
+// points.
+func (transaction *Transaction) SetSavePoint() {
+	C.rocksdb_transaction_set_savepoint(transaction.c)
+}
+
+// RollbackToSavePoint ...
+// Undo all operations in this transaction (Put, Merge, Delete, PutLogData)
+// since the most recent call to SetSavePoint() and removes the most recent
+// SetSavePoint().
+// If there is no previous call to SetSavePoint(), returns Status::NotFound()
+func (transaction *Transaction) RollbackToSavePoint() error {
+	var cErr *C.char
+	C.rocksdb_transaction_rollback_to_savepoint(transaction.c, &cErr)
 	if cErr != nil {
 		defer C.free(unsafe.Pointer(cErr))
 		return errors.New(C.GoString(cErr))
@@ -55,6 +73,23 @@ func (transaction *Transaction) Get(opts *ReadOptions, key []byte) (*Slice, erro
 	)
 	cValue := C.rocksdb_transaction_get(
 		transaction.c, opts.c, cKey, C.size_t(len(key)), &cValLen, &cErr,
+	)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return nil, errors.New(C.GoString(cErr))
+	}
+	return NewSlice(cValue, cValLen), nil
+}
+
+// GetCF returns the data associated with the key from the database given this transaction.
+func (transaction *Transaction) GetCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (*Slice, error) {
+	var (
+		cErr    *C.char
+		cValLen C.size_t
+		cKey    = byteToChar(key)
+	)
+	cValue := C.rocksdb_transaction_get_cf(
+		transaction.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cValLen, &cErr,
 	)
 	if cErr != nil {
 		defer C.free(unsafe.Pointer(cErr))
@@ -90,6 +125,21 @@ func (transaction *Transaction) Put(key, value []byte) error {
 	C.rocksdb_transaction_put(
 		transaction.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr,
 	)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
+
+// Merge ...
+func (transaction *Transaction) Merge(key, value []byte) error {
+	var (
+		cErr   *C.char
+		cKey   = byteToChar(key)
+		cValue = byteToChar(value)
+	)
+	C.rocksdb_transaction_merge(transaction.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
 	if cErr != nil {
 		defer C.free(unsafe.Pointer(cErr))
 		return errors.New(C.GoString(cErr))

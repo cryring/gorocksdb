@@ -18,6 +18,14 @@ func NewNativeCache(c *C.rocksdb_cache_t) *Cache {
 	return &Cache{c}
 }
 
+// SetCapacity sets the maximum configured capacity of the cache. When the new
+// capacity is less than the old capacity and the existing usage is
+// greater than new capacity, the implementation will do its best job to
+// purge the released entries from the cache in order to lower the usage
+func (c *Cache) SetCapacity(capacity int) {
+	C.rocksdb_cache_set_capacity(c.c, C.size_t(capacity))
+}
+
 // GetUsage returns the Cache memory usage.
 func (c *Cache) GetUsage() int {
 	return int(C.rocksdb_cache_get_usage(c.c))
