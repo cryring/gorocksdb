@@ -38,8 +38,13 @@ func (wb *WriteBatch) Put(key, value []byte) {
 
 // PutV queues a key(SliceParts)-value(SliceParts) pair.
 func (wb *WriteBatch) PutV(keys, values [][]byte) {
-	cKeys, cKeysSize := byteSlicesToCSlices(keys)
-	cValues, cValuesSize := byteSlicesToCSlices(values)
+	var (
+		cKeys, cKeysSize     = byteSlicesToCSlices(keys)
+		cValues, cValuesSize = byteSlicesToCSlices(values)
+	)
+	defer cKeys.Destroy()
+	defer cValues.Destroy()
+
 	C.rocksdb_writebatch_putv(
 		wb.c,
 		C.int(len(keys)),
@@ -60,8 +65,13 @@ func (wb *WriteBatch) PutCF(cf *ColumnFamilyHandle, key, value []byte) {
 
 // PutVCF queues a key(SliceParts)-value(SliceParts) pair in a column family.
 func (wb *WriteBatch) PutVCF(cf *ColumnFamilyHandle, keys, values [][]byte) {
-	cKeys, cKeysSize := byteSlicesToCSlices(keys)
-	cValues, cValuesSize := byteSlicesToCSlices(values)
+	var (
+		cKeys, cKeysSize     = byteSlicesToCSlices(keys)
+		cValues, cValuesSize = byteSlicesToCSlices(values)
+	)
+	defer cKeys.Destroy()
+	defer cValues.Destroy()
+
 	C.rocksdb_writebatch_putv_cf(
 		wb.c,
 		cf.c,
@@ -83,8 +93,13 @@ func (wb *WriteBatch) Merge(key, value []byte) {
 
 // MergeV queues a merge of "value" with the existing value of "key".
 func (wb *WriteBatch) MergeV(keys, values [][]byte) {
-	cKeys, cKeysSize := byteSlicesToCSlices(keys)
-	cValues, cValuesSize := byteSlicesToCSlices(values)
+	var (
+		cKeys, cKeysSize     = byteSlicesToCSlices(keys)
+		cValues, cValuesSize = byteSlicesToCSlices(values)
+	)
+	defer cKeys.Destroy()
+	defer cValues.Destroy()
+
 	C.rocksdb_writebatch_mergev(
 		wb.c,
 		C.int(len(keys)),
@@ -107,8 +122,13 @@ func (wb *WriteBatch) MergeCF(cf *ColumnFamilyHandle, key, value []byte) {
 // MergeVCF queues a merge of "value" with the existing value of "key" in a
 // column family.
 func (wb *WriteBatch) MergeVCF(cf *ColumnFamilyHandle, keys, values [][]byte) {
-	cKeys, cKeysSize := byteSlicesToCSlices(keys)
-	cValues, cValuesSize := byteSlicesToCSlices(values)
+	var (
+		cKeys, cKeysSize     = byteSlicesToCSlices(keys)
+		cValues, cValuesSize = byteSlicesToCSlices(values)
+	)
+	defer cKeys.Destroy()
+	defer cValues.Destroy()
+
 	C.rocksdb_writebatch_mergev_cf(
 		wb.c,
 		cf.c,
@@ -130,6 +150,8 @@ func (wb *WriteBatch) Delete(key []byte) {
 // DeleteV queues a deletion of the data at key.
 func (wb *WriteBatch) DeleteV(keys [][]byte) {
 	cKeys, cKeysSize := byteSlicesToCSlices(keys)
+	defer cKeys.Destroy()
+
 	C.rocksdb_writebatch_deletev(
 		wb.c,
 		C.int(len(keys)),
@@ -156,6 +178,8 @@ func (wb *WriteBatch) DeleteCF(cf *ColumnFamilyHandle, key []byte) {
 // DeleteVCF queues a deletion of the data at key.
 func (wb *WriteBatch) DeleteVCF(cf *ColumnFamilyHandle, keys [][]byte) {
 	cKeys, cKeysSize := byteSlicesToCSlices(keys)
+	defer cKeys.Destroy()
+
 	C.rocksdb_writebatch_deletev_cf(
 		wb.c,
 		cf.c,
@@ -423,8 +447,13 @@ func (wb *WriteBatchWithIndex) Put(key, value []byte) {
 
 // PutV queues a key(SliceParts)-value(SliceParts) pair.
 func (wb *WriteBatchWithIndex) PutV(keys, values [][]byte) {
-	cKeys, cKeysSize := byteSlicesToCSlices(keys)
-	cValues, cValuesSize := byteSlicesToCSlices(values)
+	var (
+		cKeys, cKeysSize     = byteSlicesToCSlices(keys)
+		cValues, cValuesSize = byteSlicesToCSlices(values)
+	)
+	defer cKeys.Destroy()
+	defer cValues.Destroy()
+
 	C.rocksdb_writebatch_wi_putv(
 		wb.c,
 		C.int(len(keys)),
@@ -445,8 +474,13 @@ func (wb *WriteBatchWithIndex) PutCF(cf *ColumnFamilyHandle, key, value []byte) 
 
 // PutVCF queues a key(SliceParts)-value(SliceParts) pair in a column family.
 func (wb *WriteBatchWithIndex) PutVCF(cf *ColumnFamilyHandle, keys, values [][]byte) {
-	cKeys, cKeysSize := byteSlicesToCSlices(keys)
-	cValues, cValuesSize := byteSlicesToCSlices(values)
+	var (
+		cKeys, cKeysSize     = byteSlicesToCSlices(keys)
+		cValues, cValuesSize = byteSlicesToCSlices(values)
+	)
+	defer cKeys.Destroy()
+	defer cValues.Destroy()
+
 	C.rocksdb_writebatch_wi_putv_cf(
 		wb.c,
 		cf.c,
