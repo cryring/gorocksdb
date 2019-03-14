@@ -57,6 +57,11 @@ func (opts *BlockBasedTableOptions) SetCacheIndexAndFilterBlocks(value bool) {
 	C.rocksdb_block_based_options_set_cache_index_and_filter_blocks(opts.c, boolToChar(value))
 }
 
+// SetCacheIndexAndFilterBlocksWiethHighPriority ...
+func (opts *BlockBasedTableOptions) SetCacheIndexAndFilterBlocksWiethHighPriority(value bool) {
+	C.rocksdb_block_based_options_set_cache_index_and_filter_blocks_with_high_priority(opts.c, boolToChar(value))
+}
+
 // SetPinL0FilterAndIndexBlocksInCache sets cache_index_and_filter_blocks.
 // If is true and the below is true (hash_index_allow_collision), then
 // filter and index blocks are stored in the cache, but a reference is
@@ -64,6 +69,11 @@ func (opts *BlockBasedTableOptions) SetCacheIndexAndFilterBlocks(value bool) {
 // evicted from cache when the table reader is freed.
 func (opts *BlockBasedTableOptions) SetPinL0FilterAndIndexBlocksInCache(value bool) {
 	C.rocksdb_block_based_options_set_pin_l0_filter_and_index_blocks_in_cache(opts.c, boolToChar(value))
+}
+
+// SetPinTopLevelIndexAndFilter ...
+func (opts *BlockBasedTableOptions) SetPinTopLevelIndexAndFilter(value bool) {
+	C.rocksdb_block_based_options_set_pin_top_level_index_and_filter(opts.c, boolToChar(value))
 }
 
 // SetBlockSize sets the approximate size of user data packed per block.
@@ -142,6 +152,34 @@ func (opts *BlockBasedTableOptions) SetWholeKeyFiltering(value bool) {
 	C.rocksdb_block_based_options_set_whole_key_filtering(opts.c, boolToChar(value))
 }
 
+// SetFormatVersion ...
+// We currently have three versions:
+// 0 -- This version is currently written out by all RocksDB's versions by
+// default.  Can be read by really old RocksDB's. Doesn't support changing
+// checksum (default is CRC32).
+// 1 -- Can be read by RocksDB's versions since 3.0. Supports non-default
+// checksum, like xxHash. It is written by RocksDB when
+// BlockBasedTableOptions::checksum is something other than kCRC32c. (version
+// 0 is silently upconverted)
+// 2 -- Can be read by RocksDB's versions since 3.10. Changes the way we
+// encode compressed blocks with LZ4, BZip2 and Zlib compression. If you
+// don't plan to run RocksDB before version 3.10, you should probably use
+// this.
+// 3 -- Can be read by RocksDB's versions since 5.15. Changes the way we
+// encode the keys in index blocks. If you don't plan to run RocksDB before
+// version 5.15, you should probably use this.
+// This option only affects newly written tables. When reading existing
+// tables, the information about version is read from the footer.
+// 4 -- Can be read by RocksDB's versions since 5.16. Changes the way we
+// encode the values in index blocks. If you don't plan to run RocksDB before
+// version 5.16 and you are using index_block_restart_interval > 1, you should
+// probably use this as it would reduce the index size.
+// This option only affects newly written tables. When reading existing
+// tables, the information about version is read from the footer.
+func (opts *BlockBasedTableOptions) SetFormatVersion(value int) {
+	C.rocksdb_block_based_options_set_format_version(opts.c, C.int(value))
+}
+
 // SetIndexType sets the index type used for this table.
 // kBinarySearch:
 // A space efficient index block that is optimized for
@@ -156,4 +194,9 @@ func (opts *BlockBasedTableOptions) SetWholeKeyFiltering(value bool) {
 // Default: kBinarySearch
 func (opts *BlockBasedTableOptions) SetIndexType(value IndexType) {
 	C.rocksdb_block_based_options_set_index_type(opts.c, C.int(value))
+}
+
+// SetHashIndexAllowCollision ...
+func (opts *BlockBasedTableOptions) SetHashIndexAllowCollision(value bool) {
+	C.rocksdb_block_based_options_set_hash_index_allow_collision(opts.c, boolToChar(value))
 }
