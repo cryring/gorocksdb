@@ -634,6 +634,8 @@ type LiveFileMetadata struct {
 	Size        int64
 	SmallestKey []byte
 	LargestKey  []byte
+	Entries     uint64
+	Deletions   uint64
 }
 
 // GetLiveFilesMetaData returns a list of all table files with their
@@ -649,6 +651,8 @@ func (db *DB) GetLiveFilesMetaData() []LiveFileMetadata {
 		liveFile.Name = C.GoString(C.rocksdb_livefiles_name(lf, i))
 		liveFile.Level = int(C.rocksdb_livefiles_level(lf, i))
 		liveFile.Size = int64(C.rocksdb_livefiles_size(lf, i))
+		liveFile.Entries = uint64(C.rocksdb_livefiles_entries(lf, i))
+		liveFile.Deletions = uint64(C.rocksdb_livefiles_deletions(lf, i))
 
 		var cSize C.size_t
 		key := C.rocksdb_livefiles_smallestkey(lf, i, &cSize)

@@ -145,6 +145,30 @@ func (b *BackupEngine) RestoreDBFromLatestBackup(dbDir, walDir string, ro *Resto
 	return nil
 }
 
+// VerifyBackup checks that each file exists and that the size of the file matches our
+// expectations. it does not check file checksum.
+// Returns Status::OK() if all checks are good
+func (b *BackupEngine) VerifyBackup(id uint32) error {
+	var cErr *C.char
+	C.rocksdb_backup_engine_verify_backup(b.c, C.uint32_t(id), &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
+
+// PurgeOldBackups deletes old backups, keeping latest num_backups_to_keep alive
+func (b *BackupEngine) PurgeOldBackups(numBackupsToKeep uint32) error {
+	var cErr *C.char
+	C.rocksdb_backup_engine_purge_old_backups(b.c, C.uint32_t(numBackupsToKeep), &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
+
 // Close close the backup engine and cleans up state
 // The backups already taken remain on storage.
 func (b *BackupEngine) Close() {
