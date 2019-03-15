@@ -334,6 +334,94 @@ func (opts *Options) SetMinWriteBufferNumberToMerge(value int) {
 	C.rocksdb_options_set_min_write_buffer_number_to_merge(opts.c, C.int(value))
 }
 
+// SetMaxWriteBufferNumberToMaintain ...
+// The total maximum number of write buffers to maintain in memory including
+// copies of buffers that have already been flushed.  Unlike
+// max_write_buffer_number, this parameter does not affect flushing.
+// This controls the minimum amount of write history that will be available
+// in memory for conflict checking when Transactions are used.
+//
+// When using an OptimisticTransactionDB:
+// If this value is too low, some transactions may fail at commit time due
+// to not being able to determine whether there were any write conflicts.
+//
+// When using a TransactionDB:
+// If Transaction::SetSnapshot is used, TransactionDB will read either
+// in-memory write buffers or SST files to do write-conflict checking.
+// Increasing this value can reduce the number of reads to SST files
+// done for conflict detection.
+//
+// Setting this value to 0 will cause write buffers to be freed immediately
+// after they are flushed.
+// If this value is set to -1, 'max_write_buffer_number' will be used.
+//
+// Default:
+// If using a TransactionDB/OptimisticTransactionDB, the default value will
+// be set to the value of 'max_write_buffer_number' if it is not explicitly
+// set by the user.  Otherwise, the default is 0.
+func (opts *Options) SetMaxWriteBufferNumberToMaintain(value int) {
+	C.rocksdb_options_set_max_write_buffer_number_to_maintain(opts.c, C.int(value))
+}
+
+// SetEnablePipelineWrite ...
+// By default, a single write thread queue is maintained. The thread gets
+// to the head of the queue becomes write batch group leader and responsible
+// for writing to WAL and memtable for the batch group.
+//
+// If enable_pipelined_write is true, separate write thread queue is
+// maintained for WAL write and memtable write. A write thread first enter WAL
+// writer queue and then memtable writer queue. Pending thread on the WAL
+// writer queue thus only have to wait for previous writers to finish their
+// WAL writing but not the memtable writing. Enabling the feature may improve
+// write throughput and reduce latency of the prepare phase of two-phase
+// commit.
+//
+// Default: false
+func (opts *Options) SetEnablePipelineWrite(value bool) {
+	C.rocksdb_options_set_enable_pipelined_write(opts.c, boolToChar(value))
+}
+
+// SetMaxSubCompactions ...
+// This value represents the maximum number of threads that will
+// concurrently perform a compaction job by breaking it into multiple,
+// smaller ones that are run simultaneously.
+// Default: 1 (i.e. no subcompactions)
+func (opts *Options) SetMaxSubCompactions(value uint32) {
+	C.rocksdb_options_set_max_subcompactions(opts.c, C.uint32_t(value))
+}
+
+// SetMaxBackgroundJobs ...
+// Maximum number of concurrent background jobs (compactions and flushes).
+//
+// Default: 2
+//
+// Dynamically changeable through SetDBOptions() API.
+func (opts *Options) SetMaxBackgroundJobs(value int) {
+	C.rocksdb_options_set_max_background_jobs(opts.c, C.int(value))
+}
+
+// SetBaseBackgroundCompactions ...
+// NOT SUPPORTED ANYMORE: RocksDB automatically decides this based on the
+// value of max_background_jobs. This option is ignored.
+//
+// Dynamically changeable through SetDBOptions() API.
+func (opts *Options) SetBaseBackgroundCompactions(value int) {
+	C.rocksdb_options_set_base_background_compactions(opts.c, C.int(value))
+}
+
+// SetRecycleLogFileNum ...
+// Recycle log files.
+// If non-zero, we will reuse previously written log files for new
+// logs, overwriting the old data.  The value indicates how many
+// such files we will keep around at any point in time for later
+// use.  This is more efficient because the blocks are already
+// allocated and fdatasync does not need to update the inode after
+// each write.
+// Default: 0
+func (opts *Options) SetRecycleLogFileNum(value uint32) {
+	C.rocksdb_options_set_recycle_log_file_num(opts.c, C.size_t(value))
+}
+
 // SetMaxOpenFiles sets the number of open files that can be used by the DB.
 //
 // You may need to increase this if your database has a large working set
@@ -1106,6 +1194,19 @@ func (opts *Options) SetBlockBasedTableFactory(value *BlockBasedTableOptions) {
 // Immutable.
 func (opts *Options) SetAllowIngestBehind(value bool) {
 	C.rocksdb_options_set_allow_ingest_behind(opts.c, boolToChar(value))
+}
+
+// SetMemtablePrefixBloomSizeRation ...
+// if prefix_extractor is set and memtable_prefix_bloom_size_ratio is not 0,
+// create prefix bloom for memtable with the size of
+// write_buffer_size * memtable_prefix_bloom_size_ratio.
+// If it is larger than 0.25, it is sanitized to 0.25.
+//
+// Default: 0 (disable)
+//
+// Dynamically changeable through SetOptions() API
+func (opts *Options) SetMemtablePrefixBloomSizeRation(value float64) {
+	C.rocksdb_options_set_memtable_prefix_bloom_size_ratio(opts.c, C.double(value))
 }
 
 // Destroy deallocates the Options object.
