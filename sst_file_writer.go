@@ -50,6 +50,51 @@ func (w *SSTFileWriter) Add(key, value []byte) error {
 	return nil
 }
 
+// Put add a Put key with value to currently opened file
+// REQUIRES: key is after any previously added key according to comparator.
+func (w *SSTFileWriter) Put(key, value []byte) error {
+	cKey := byteToChar(key)
+	cValue := byteToChar(value)
+	var cErr *C.char
+	C.rocksdb_sstfilewriter_put(w.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
+
+// Merge add a Merge key with value to currently opened file
+// REQUIRES: key is after any previously added key according to comparator.
+func (w *SSTFileWriter) Merge(key, value []byte) error {
+	var (
+		cErr   *C.char
+		cKey   = byteToChar(key)
+		cValue = byteToChar(value)
+	)
+	C.rocksdb_sstfilewriter_merge(w.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
+
+// Delete add a deletion key to currently opened file
+// REQUIRES: key is after any previously added key according to comparator.
+func (w *SSTFileWriter) Delete(key []byte) error {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+	C.rocksdb_sstfilewriter_delete(w.c, cKey, C.size_t(len(key)), &cErr)
+	if cErr != nil {
+		defer C.free(unsafe.Pointer(cErr))
+		return errors.New(C.GoString(cErr))
+	}
+	return nil
+}
+
 // Finish finishes writing to sst file and close file.
 func (w *SSTFileWriter) Finish() error {
 	var cErr *C.char
@@ -61,7 +106,15 @@ func (w *SSTFileWriter) Finish() error {
 	return nil
 }
 
+// FileSize returns the current file size.
+func (w *SSTFileWriter) FileSize() uint64 {
+	var size C.uint64_t
+	C.rocksdb_sstfilewriter_file_size(w.c, &size)
+	return uint64(size)
+}
+
 // Destroy destroys the SSTFileWriter object.
 func (w *SSTFileWriter) Destroy() {
 	C.rocksdb_sstfilewriter_destroy(w.c)
+	w.c = nil
 }

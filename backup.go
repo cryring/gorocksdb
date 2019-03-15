@@ -71,6 +71,7 @@ func (ro *RestoreOptions) SetKeepLogFiles(v int) {
 // Destroy destroys this RestoreOptions instance.
 func (ro *RestoreOptions) Destroy() {
 	C.rocksdb_restore_options_destroy(ro.c)
+	ro.c = nil
 }
 
 // BackupEngine is a reusable handle to a RocksDB Backup, created by

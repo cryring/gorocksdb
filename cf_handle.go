@@ -29,6 +29,7 @@ func (h *ColumnFamilyHandle) UnsafeGetCFHandler() unsafe.Pointer {
 // Destroy calls the destructor of the underlying column family handle.
 func (h *ColumnFamilyHandle) Destroy() {
 	C.rocksdb_column_family_handle_destroy(h.c)
+	h.c = nil
 }
 
 // ColumnFamilyHandles represents the array of column families.

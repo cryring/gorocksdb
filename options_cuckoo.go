@@ -62,4 +62,5 @@ func (opts *CuckooOptions) SetUseModuleHash(value bool) {
 // Destroy is used to free the options object.
 func (opts *CuckooOptions) Destroy() {
 	C.rocksdb_cuckoo_options_destroy(opts.c)
+	opts.c = nil
 }
