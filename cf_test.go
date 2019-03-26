@@ -319,3 +319,41 @@ func TestColumnFamilyMultiGet(t *testing.T) {
 	ensure.DeepEqual(t, values[1].Data(), givenVal2)
 	ensure.DeepEqual(t, values[2].Data(), givenVal3)
 }
+
+func TestColumnFamilyDeleteRange(t *testing.T) {
+	db, cfh, cleanup := newTestDBCF(t, "TestDBDeleteRangeCF")
+	defer cleanup()
+
+	var (
+		givenKey1 = []byte("hello1")
+		givenKey2 = []byte("hello2")
+		givenKey3 = []byte("hello3")
+		givenVal1 = []byte("world1")
+		givenVal2 = []byte("world2")
+		givenVal3 = []byte("world3")
+		wo        = NewDefaultWriteOptions()
+		ro        = NewDefaultReadOptions()
+	)
+
+	// create
+	ensure.Nil(t, db.PutCF(wo, cfh[1], givenKey1, givenVal1))
+	ensure.Nil(t, db.PutCF(wo, cfh[1], givenKey2, givenVal2))
+	ensure.Nil(t, db.PutCF(wo, cfh[1], givenKey3, givenVal3))
+
+	// column family 0 only has givenKey1
+	// retrieve
+	err := db.DeleteRangeCF(wo, cfh[1], givenKey1, givenKey3)
+	ensure.Nil(t, err)
+
+	val1, err := db.GetCF(ro, cfh[1], givenKey1)
+	ensure.Nil(t, err)
+	ensure.True(t, val1.Data() == nil)
+
+	val2, err := db.GetCF(ro, cfh[1], givenKey1)
+	ensure.Nil(t, err)
+	ensure.True(t, val2.Data() == nil)
+
+	val3, err := db.GetCF(ro, cfh[1], givenKey1)
+	ensure.Nil(t, err)
+	ensure.True(t, val3.Data() == nil)
+}

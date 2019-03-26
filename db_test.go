@@ -172,3 +172,40 @@ func TestDBMultiGet(t *testing.T) {
 	ensure.DeepEqual(t, values[2].Data(), givenVal2)
 	ensure.DeepEqual(t, values[3].Data(), givenVal3)
 }
+
+func TestDBDeleteRange(t *testing.T) {
+	db := newTestDB(t, "TestDBDeleteRange", nil)
+	defer db.Close()
+
+	var (
+		givenKey1 = []byte("hello1")
+		givenKey2 = []byte("hello2")
+		givenKey3 = []byte("hello3")
+		givenVal1 = []byte("world1")
+		givenVal2 = []byte("world2")
+		givenVal3 = []byte("world3")
+		wo        = NewDefaultWriteOptions()
+		ro        = NewDefaultReadOptions()
+	)
+
+	// create
+	ensure.Nil(t, db.Put(wo, givenKey1, givenVal1))
+	ensure.Nil(t, db.Put(wo, givenKey2, givenVal2))
+	ensure.Nil(t, db.Put(wo, givenKey3, givenVal3))
+
+	// retrieve
+	err := db.DeleteRange(wo, givenKey1, givenKey3)
+	ensure.Nil(t, err)
+
+	val1, err := db.Get(ro, givenKey1)
+	ensure.Nil(t, err)
+	ensure.True(t, val1.Data() == nil)
+
+	val2, err := db.Get(ro, givenKey1)
+	ensure.Nil(t, err)
+	ensure.True(t, val2.Data() == nil)
+
+	val3, err := db.Get(ro, givenKey1)
+	ensure.Nil(t, err)
+	ensure.True(t, val3.Data() == nil)
+}
