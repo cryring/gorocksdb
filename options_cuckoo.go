@@ -31,7 +31,7 @@ func (opts *CuckooOptions) SetMaxSearchDepth(value uint32) {
 }
 
 // SetCuckooBlockSize ...
-// In case of collision while inserting, the builder
+// in case of collision while inserting, the builder
 // attempts to insert in the next cuckoo_block_size
 // locations before skipping over to the next Cuckoo hash
 // function. This makes lookups more cache friendly in case

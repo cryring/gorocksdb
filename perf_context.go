@@ -28,7 +28,7 @@ func (pc *PerfContext) Metric(metric int) {
 	C.rocksdb_perfcontext_metric(pc.c, C.int(metric))
 }
 
-// Destory ...
+// Destroy ...
 func (pc *PerfContext) Destroy() {
 	C.rocksdb_perfcontext_destroy(pc.c)
 }
